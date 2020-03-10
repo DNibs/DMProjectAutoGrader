@@ -34,6 +34,8 @@ for file in glob.glob('NCAAMTraining*.xlsx'):
         out_file.write('Leakage, 10\n')
 
     # Determine labels (rapidminer moves labels to far right, so attribute index should be greater than 16)
+    # (Rapidminer moves attributes with replaced values to left)
+    # replaced values - untouched attributes - label - special attributes
     num_actual_labels = 0
     for attr in remaining_labels:
         if attributes.index(attr) > 16:
