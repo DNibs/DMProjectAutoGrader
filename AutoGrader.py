@@ -23,21 +23,27 @@ for file in glob.glob('NCAAMTraining*.xlsx'):
     out_file.write('{}\n'.format(cdt_name[0]))
     df = pd.read_excel(file)
     attributes = list(df)
-    num_leakage = set(attributes).intersection(leakage)
+    remaining_labels = set(attributes).intersection(leakage)
 
-    # Determine label and leakage
-    if num_leakage.__len__() < 1:
-        print('No vald label!')
-        out_file.write('Label, 0')
-    else:
-        print('Label: 10')
-        out_file.write('Label, 10\n')
-    if num_leakage.__len__() > 1:
+    # Determine leakage
+    if remaining_labels.__len__() > 1:
         print('Leakage, 0')
         out_file.write('Leakage, 0\n')
     else:
         print('No leakage')
         out_file.write('Leakage, 10\n')
+
+    # Determine labels (rapidminer moves labels to far right, so attribute index should be greater than 16)
+    num_actual_labels = 0
+    for attr in remaining_labels:
+        if attributes.index(attr) > 16:
+            num_actual_labels += 1
+    if num_actual_labels == 1:
+        print('Label, 10')
+        out_file.write('Label, 10\n')
+    else:
+        print('Label, 0')
+        out_file.write('Label, 0\n')
 
     # Test for missing values
     if df.isnull().values.any():
@@ -46,6 +52,14 @@ for file in glob.glob('NCAAMTraining*.xlsx'):
     else:
         print('All values are filled')
         out_file.write('Empty, 10\n')
+
+    # Test for pace (attribute with fewest values - should be removed as part of data cleaning)
+    # if 'pace' in attributes:
+
+
+# 2010 last year for pace, 3491 all, 541 tourney
+# tourney invite = 1508
+
 
 
 out_file.close()
