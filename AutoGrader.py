@@ -1,5 +1,19 @@
 """
 This file autogrades the CY305 Datamining Project based on NCAAAM Tournament
+
+write grades to DF
+cdtName - submitFormat (0-5) - label (0-5) - leakage (0-5) - missingVals (0-5) - total (0-20)
+init variables (directories, label/leakage list,
+for EACH_FILE_.XLSX:
+    get indexed attributes list
+    check for txt or doc file
+    check label - item from label/leakage in attributes to back 3rd
+    check leakage - more than one item from label/leakage in attributes anywhere
+    check missing vals - less than 100, -2.5, otherwise -5
+    check for school name or year in  the first third (show that it didn't change role, -2.5 to missingVals)
+    calc total
+export pandas to csv
+print job complete, total graded
 """
 
 import pandas as pd
@@ -10,10 +24,13 @@ import re
 submission_fld = 'c:/Users/david.niblick/OneDrive - West Point/CY305/grades/DM_Project/submission_pt1/'
 leakage = ['playIn', 'firstRound', 'secondRound', 'sweetSixteen', 'eliteEight', 'finalFour', 'nationalChampGame',
            'champion', 'tourneySuccessFactor']
+excess = ['yearTeamID', 'year', 'school']
 out_fn = 'grade_results.txt'
 
 os.chdir(submission_fld)
 out_file = open(out_fn, 'w')
+# create empty dataframe, columns above, might need to get # xlsx files first to determine max index
+out_df = pd.DataFrame(columns=['cdtName', 'submitFormat', 'label', 'leakage', 'missingVals', 'total'])
 
 for file in glob.glob('NCAAMTraining*.xlsx'):
     print(file)
