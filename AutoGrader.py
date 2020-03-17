@@ -23,7 +23,7 @@ import re
 
 # Global Vars
 submission_fld = 'c:/Users/david.niblick/OneDrive - West Point/CY305/grades/DM_Project/submission_pt1/'
-leakage = ['playIn', 'firstRound', 'secondRound', 'sweetSixteen', 'eliteEight', 'finalFour', 'nationalChampGame',
+leakage = ['firstRound', 'secondRound', 'sweetSixteen', 'eliteEight', 'finalFour', 'nationalChampGame',
            'champion', 'tourneySuccessFactor']
 excess_attributes = ['yearTeamID', 'year', 'school']
 excess = ['yearTeamID', 'year', 'school']
