@@ -20,6 +20,7 @@ import pandas as pd
 import glob
 import os
 import re
+import datetime
 
 # Global Vars
 submission_fld = 'c:/Users/david.niblick/OneDrive - West Point/CY305/grades/DM_Project/submission_pt1/'
@@ -123,5 +124,6 @@ for item in columns:
     out_df[item] = pd.to_numeric(out_df[item])
 out_df['total'] = out_df.sum(axis=1)
 out_df['percent'] = out_df['total'] / 20.0
+out_df['date'] = datetime.date.today()
 out_df.to_csv('grades.csv', index=False)
 print(out_df)
