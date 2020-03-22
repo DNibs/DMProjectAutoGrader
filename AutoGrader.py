@@ -85,8 +85,10 @@ def check_leakage(rem_labels):
 def check_missing_values():
     return not df.isnull().values.any()
 
-
+num_files = len(glob.glob('NCAAMTraining*.xlsx'))
+print(num_files)
 for file in glob.glob('NCAAMTraining*.xlsx'):
+    print('\r {} of {} files ({:.0%})'.format(i, num_files, i/num_files), end='')
     df = pd.read_excel(file)
     cdt_name = re.findall('clean_(\w+).xlsx', file)
     out_df.at[i, 'cdtName'] = cdt_name[0]
