@@ -66,24 +66,22 @@ def check_label(attr, rem_labels):
 
 def check_excess_attributes(attr):
     global excess_attributes
+    count = 0
     remaining_excess = set(attr).intersection(excess_attributes)
     for item in remaining_excess:
         idx = attr.index(item)
         if (idx / attr.__len__()) < 0.5:
-            return False
-    return True
+            count += 1
+    return count
 
 
 def check_leakage(rem_labels):
     # Determine leakage
-    if rem_labels.__len__() <= 1:
-        return True
-    else:
-        return False
+    return rem_labels.__len__() - 1
 
 
 def check_missing_values():
-    return not df.isnull().values.any()
+    return df.isnull().values.sum()
 
 
 num_files = len(glob.glob('NCAAMTraining*.xlsx'))
@@ -102,25 +100,35 @@ for file in glob.glob('*.xlsx'):
 
     attributes, remaining_labels = get_attributes_and_possible_labels(df)
 
-    if check_leakage(remaining_labels):
-        out_df.at[i, 'leakage'] = 4
-    else:
+    num_leakage = check_leakage(remaining_labels)
+    if num_leakage > 3:
         out_df.at[i, 'leakage'] = 0
+    elif 3 >= num_leakage > 0:
+        out_df.at[i, 'leakage'] = 2
+    else:
+        out_df.at[i, 'leakage'] = 4
 
     if check_label(attributes, remaining_labels):
         out_df.at[i, 'label'] = 4
     else:
         out_df.at[i, 'label'] = 0
 
-    if check_missing_values():
-        out_df.at[i, 'missingVals'] = 4
-    else:
+    num_missing_val = check_missing_values()
+    if num_missing_val >= 500:
         out_df.at[i, 'missingVals'] = 0
-
-    if check_excess_attributes(attributes):
-        out_df.at[i, 'excessAttr'] = 4
+    elif (num_missing_val < 500) and (num_missing_val > 0):
+        out_df.at[i, 'missingVals'] = 2
     else:
+        out_df.at[i, 'missingVals'] = 4
+
+    num_excess_att= check_excess_attributes(attributes)
+    if num_excess_att > 1:
         out_df.at[i, 'excessAttr'] = 0
+    elif num_excess_att == 1:
+        out_df.at[i, 'excessAttr'] = 2
+    else:
+        out_df.at[i, 'excessAttr'] = 4
+
     i += 1
 
 columns.remove('cdtName')
@@ -130,4 +138,5 @@ out_df['total'] = out_df.sum(axis=1)
 out_df['percent'] = out_df['total'] / 20.0
 out_df['date'] = datetime.date.today()
 out_df.to_csv('grades.csv', index=False)
+print('')
 print(out_df)
