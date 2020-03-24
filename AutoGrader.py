@@ -36,12 +36,12 @@ i = 0
 
 
 def check_submission_format(cadet_name):
-    num_files = 0
-    for fn in glob.glob('*'+cadet_name+'.txt'):
-        num_files += 1
-    for fn in glob.glob('*'+cadet_name+'.doc?'):
-        num_files += 1
-    if num_files >= 1:
+    count_file = 0
+    for fn in glob.glob('*'+cadet_name+'*.txt'):
+        count_file += 1
+    for fn in glob.glob('*'+cadet_name+'*.doc?'):
+        count_file += 1
+    if count_file >= 1:
         return True
     else:
         return False
@@ -91,7 +91,12 @@ for file in glob.glob('*.xlsx'):
     print('\r {} of {} files ({:.0%}), CDT {}'.format(i, num_files, i/num_files, cdt_name[0]), end='')
 
     out_df.at[i, 'cdtName'] = cdt_name[0]
-    df = pd.read_excel(file)
+    try:
+        df = pd.read_excel(file)
+    except:
+        out_df.at[i, 'cdtName'] = cdt_name[0] + 'file error'
+        print('\r {} file error'.format(cdt_name[0]))
+        continue
 
     if check_submission_format(cdt_name[0]):
         out_df.at[i, 'submitFormat'] = 4
