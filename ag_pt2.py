@@ -38,29 +38,32 @@ def get_tp_fp_rmse(fn):
 
     for column in df.head():
         label = re.search('prediction\((.*)\)', column)
-    print(label.group(1))
+
+    legit_label = False
+    if label is not None:
+        out_file.write('Label: {} \t'.format(label.group(1)))
+        for att in labels_class:
+            if label.group(1) == att:
+                legit_label = True
+                write_class_perf(att, df)
+        for att in labels_regression:
+            if label.group(1) == att:
+                legit_label = True
+                write_regression_perf(att, df)
+        out_file.write('Legit = {} \t'.format(legit_label))
+    else:
+        out_file.write('Dataset not labeled \t')
 
     num_leakage = 0
-    num_pred_labels = 0
     for column in df.head():
         if column in labels_class:
             out_file.write('{} \t'.format(column))
-            for column2 in df.head():
-                if 'prediction('+column+')' == column2:
-                    # do classification test
-                    write_class_perf(column, df)
-                    num_pred_labels += 1
             num_leakage += 1
         elif column in labels_regression:
             out_file.write('{} \t'.format(column))
-            for column2 in df.head():
-                if 'prediction('+column+')' == column2:
-                    # do regression test
-                    write_regression_perf(column, df)
-                    num_pred_labels += 1
             num_leakage += 1
 
-    if (num_leakage == 0) or (num_pred_labels == 0):
+    if num_leakage == 0:
         out_file.write('Incorrect label  \t')
     if num_leakage > 1:
         out_file.write('leakage  \t')
@@ -73,11 +76,14 @@ def write_class_perf(attribute_name, dataframe):
     tp = 0
     fp = 0
     pred_attribute = 'prediction(' + attribute_name + ')'
-    for i in range(0, num_instances):
-        if (dataframe.at[i, attribute_name] == True) and (dataframe.at[i, pred_attribute] == True):
-            tp += 1
-        if (dataframe.at[i, attribute_name] == False) and (dataframe.at[i, pred_attribute] == True):
-            fp += 1
+    try:
+        for k in range(0, num_instances):
+            if dataframe.at[k, attribute_name] and dataframe.at[k, pred_attribute]:
+                tp += 1
+            if not dataframe.at[k, attribute_name] and dataframe.at[k, pred_attribute]:
+                fp += 1
+    except:
+        out_file.write('Predicted attribute not found \t')
     out_file.write('tp: {} \t'.format(tp))
     out_file.write('fp: {} \t'.format(fp))
 
