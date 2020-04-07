@@ -36,6 +36,10 @@ def get_tp_fp_rmse(fn):
         out_file.write('file error')
         return
 
+    for column in df.head():
+        label = re.search('prediction\((.*)\)', column)
+    print(label.group(1))
+
     num_leakage = 0
     num_pred_labels = 0
     for column in df.head():
