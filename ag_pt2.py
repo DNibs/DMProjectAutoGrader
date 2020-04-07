@@ -38,7 +38,10 @@ def get_tp_fp_rmse(fn):
     num_labels = 0
     for column in df.head():
         if column in labels_class:
-            # do classification test
+            for column2 in df.head():
+                if 'prediction('+column+')' == column2:
+                    # do classification test
+                    get_class_perf(column, df)
             num_labels += 1
             print('class')
         elif column in labels_regression:
@@ -55,7 +58,18 @@ def get_tp_fp_rmse(fn):
 
 
 def get_class_perf(attribute_name, dataframe):
-    num_instances = len(dataframe)
+    num_instances = len(dataframe.index)
+    tp = 0
+    fp = 0
+    num_cols = len(dataframe.head())
+    pred_attribute = 'prediction(' + attribute_name + ')'
+    for i in range(0, num_instances):
+        if (dataframe.at[i, attribute_name] == 'true') and (dataframe.at[i, pred_attribute] == 'true'):
+            tp += 1
+        if (dataframe.at[i, attribute_name] == 'false') and (dataframe.at[i, pred_attribute] == 'true'):
+            fp += 1
+    out_file.write('tp: {} \t'.format(tp))
+    out_file.write('fp: {} \t'.format(fp))
 
 
 # file name format: 'teamName_modelType_Label.xlsx'
