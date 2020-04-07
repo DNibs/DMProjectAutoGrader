@@ -9,6 +9,7 @@ import pandas as pd
 import glob
 import os
 import re
+import numpy as np
 import datetime
 
 submission_fld = 'c:/Users/david.niblick/OneDrive - West Point/CY305/grades/DM_Project/submission_pt2/'
@@ -35,49 +36,68 @@ def get_tp_fp_rmse(fn):
         out_file.write('file error')
         return
 
-    num_labels = 0
+    num_leakage = 0
+    num_pred_labels = 0
     for column in df.head():
         if column in labels_class:
+            out_file.write('{} \t'.format(column))
             for column2 in df.head():
                 if 'prediction('+column+')' == column2:
                     # do classification test
-                    get_class_perf(column, df)
-            num_labels += 1
-            print('class')
+                    write_class_perf(column, df)
+                    num_pred_labels += 1
+            num_leakage += 1
         elif column in labels_regression:
-            # do regression test
-            num_labels += 1
-            print('regression')
+            out_file.write('{} \t'.format(column))
+            for column2 in df.head():
+                if 'prediction('+column+')' == column2:
+                    # do regression test
+                    write_regression_perf(column, df)
+                    num_pred_labels += 1
+            num_leakage += 1
 
-    if num_labels < 1:
-        out_file.write('Incorrect label')
-    if num_labels > 1:
-        out_file.write('leakage')
+    if (num_leakage == 0) or (num_pred_labels == 0):
+        out_file.write('Incorrect label  \t')
+    if num_leakage > 1:
+        out_file.write('leakage  \t')
 
     return
 
 
-def get_class_perf(attribute_name, dataframe):
+def write_class_perf(attribute_name, dataframe):
     num_instances = len(dataframe.index)
     tp = 0
     fp = 0
-    num_cols = len(dataframe.head())
     pred_attribute = 'prediction(' + attribute_name + ')'
     for i in range(0, num_instances):
-        if (dataframe.at[i, attribute_name] == 'true') and (dataframe.at[i, pred_attribute] == 'true'):
+        if (dataframe.at[i, attribute_name] == True) and (dataframe.at[i, pred_attribute] == True):
             tp += 1
-        if (dataframe.at[i, attribute_name] == 'false') and (dataframe.at[i, pred_attribute] == 'true'):
+        if (dataframe.at[i, attribute_name] == False) and (dataframe.at[i, pred_attribute] == True):
             fp += 1
     out_file.write('tp: {} \t'.format(tp))
     out_file.write('fp: {} \t'.format(fp))
 
 
+def write_regression_perf(attribute_name, dataframe):
+    num_instances = len(dataframe.index)
+    pred_attribute = 'prediction(' + attribute_name + ')'
+    residual = 0
+    for i in range(0, num_instances):
+        residual += np.square(dataframe.at[i, attribute_name] - dataframe.at[i, pred_attribute])
+    mse = residual / num_instances
+    rmse = np.sqrt(mse)
+    out_file.write('RMSE: {} \t'.format(rmse))
+
+
 # file name format: 'teamName_modelType_Label.xlsx'
+num_files = len(glob.glob('**/*.xlsx'))
+i = 0
 for file in glob.glob('**/*.xlsx'):
+    print('\r{} / {} files    '.format(i, num_files), end='')
     team_model = get_team_model_names(file)
     out_file.write(team_model + '\t')
     get_tp_fp_rmse(file)
     out_file.write('\n')
+    i += 1
 out_file.close()
-
 
