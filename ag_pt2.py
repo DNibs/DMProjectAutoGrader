@@ -105,7 +105,7 @@ i = 0
 for file in glob.glob('**/*.xlsx'):
     print('\r{} / {} files    '.format(i, num_files), end='')
     team_model = get_team_model_names(file)
-    out_file.write(team_model + '\t')
+    out_file.write(team_model + ' \t \t')
     get_tp_fp_rmse(file)
     out_file.write('\n')
     i += 1
